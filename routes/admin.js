@@ -16,9 +16,15 @@ router.get('/settings', async (req, res) => {
         const { data, error } = await supabase
             .from('admin_settings')
             .select('*')
-            .single();
+            .limit(1)
+            .maybeSingle();
 
         if (error) throw error;
+
+        // If no settings found, return default values
+        if (!data) {
+            return res.json({ upiId: 'invest@personal', qrCode: '' });
+        }
 
         // Map snake_case to camelCase
         res.json({
@@ -26,7 +32,7 @@ router.get('/settings', async (req, res) => {
             qrCode: data.qr_code_url
         });
     } catch (err) {
-        // If empty, return default
+        console.error('Fetch Settings Error:', err.message);
         res.json({ upiId: 'invest@personal', qrCode: '' });
     }
 });
