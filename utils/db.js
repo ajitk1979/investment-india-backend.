@@ -2,11 +2,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, '../db.json');
+const DATABASE_FILE_PATH = path.join(__dirname, '../db.json');
 
 // Initialize DB if it doesn't exist
 const initDB = () => {
-    if (!fs.existsSync(DB_PATH)) {
+    if (!fs.existsSync(DATABASE_FILE_PATH)) {
         const initialData = {
             users: [],
             otps: {},
@@ -18,14 +18,14 @@ const initDB = () => {
                 qrCode: '' // Will store base64 or path
             }
         };
-        fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2));
+        fs.writeFileSync(DATABASE_FILE_PATH, JSON.stringify(initialData, null, 2));
     }
 };
 
 const readData = () => {
     initDB();
     try {
-        const data = fs.readFileSync(DB_PATH, 'utf8');
+        const data = fs.readFileSync(DATABASE_FILE_PATH, 'utf8');
         return JSON.parse(data);
     } catch (err) {
         console.error("Error reading DB:", err);
@@ -35,7 +35,7 @@ const readData = () => {
 
 const writeData = (data) => {
     try {
-        fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+        fs.writeFileSync(DATABASE_FILE_PATH, JSON.stringify(data, null, 2));
     } catch (err) {
         console.error("Error writing DB:", err);
     }
