@@ -45,25 +45,33 @@ router.post('/settings', upload.single('qrCode'), async (req, res) => {
     }
 
     try {
+        console.log('Attempting to update settings. UPI:', upiId, 'QR:', qrCodeUrl ? 'Yes' : 'No');
         const updateData = { upi_id: upiId, updated_at: new Date().toISOString() };
         if (qrCodeUrl) updateData.qr_code_url = qrCodeUrl;
 
-        // Check if row exists, if not insert, else update.
-        // Since we have a single row, we can just update row with ID 1 or the first one.
-        // Better: Upsert with a constant ID if possible, or just gather and update.
+        const { data: existing, error: fetchError } = await supabase.from('admin_settings').select('id').limit(1).maybeSingle();
 
-        const { data: existing } = await supabase.from('admin_settings').select('id').limit(1).maybeSingle();
+        if (fetchError) {
+            console.error('Fetch existing settings error:', fetchError);
+            return res.status(500).json({ error: `Database fetch error: ${fetchError.message}` });
+        }
 
+        let result;
         if (existing) {
-            await supabase.from('admin_settings').update(updateData).eq('id', existing.id);
+            result = await supabase.from('admin_settings').update(updateData).eq('id', existing.id);
         } else {
-            await supabase.from('admin_settings').insert([updateData]);
+            result = await supabase.from('admin_settings').insert([updateData]);
+        }
+
+        if (result.error) {
+            console.error('Upsert settings error:', result.error);
+            return res.status(500).json({ error: `Database update error: ${result.error.message}` });
         }
 
         res.json({ success: true });
     } catch (err) {
-        console.error('Admin Settings Error:', err.message);
-        res.status(500).json({ error: 'Failed to update settings' });
+        console.error('Admin Settings Route Error:', err);
+        res.status(500).json({ error: err.message || 'Failed to update settings' });
     }
 });
 
