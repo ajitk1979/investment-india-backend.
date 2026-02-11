@@ -47,7 +47,7 @@ router.post('/deposit', async (req, res) => {
 
         const balance = await getUserBalance(uuid);
 
-        const balance = await getUserBalance(uuid);
+
 
         // Realtime emit removed (Using Supabase Realtime in Frontend)
 
@@ -85,7 +85,7 @@ router.post('/withdraw', async (req, res) => {
 
         const balance = await getUserBalance(uuid);
 
-        const balance = await getUserBalance(uuid);
+
 
         // Realtime emit removed
 
