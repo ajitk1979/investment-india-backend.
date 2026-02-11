@@ -5,16 +5,10 @@ const supabase = require('../utils/supabase');
 const multer = require('multer');
 const path = require('path');
 
-// Configure multer for QR code upload
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/'); // Serve directly from public for QR
-    },
-    filename: (req, file, cb) => {
-        cb(null, `qr-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
+const { uploadReceipt } = require('../utils/storage');
 
 // Get admin settings
 router.get('/settings', async (req, res) => {
@@ -42,7 +36,12 @@ router.post('/settings', upload.single('qrCode'), async (req, res) => {
     const { upiId } = req.body;
     let qrCodeUrl = null;
     if (req.file) {
-        qrCodeUrl = `/${req.file.filename}`;
+        try {
+            qrCodeUrl = await uploadReceipt(req.file);
+        } catch (uploadError) {
+            console.error('QR Upload Error:', uploadError);
+            return res.status(500).json({ error: 'Failed to upload QR code' });
+        }
     }
 
     try {
@@ -110,20 +109,16 @@ router.get('/investments', async (req, res) => {
 // Verify investment
 router.post('/verify', async (req, res) => {
     const { investmentId, status } = req.body;
-    // status: 'paid' (Active) or 'rejected'
+    // status: 'paid' or 'rejected'
 
     if (!investmentId || !status) {
         return res.status(400).json({ error: 'Investment ID and status required' });
     }
 
-    const newStatus = status === 'paid' ? 'active' : 'rejected';
-    // Frontend passes 'paid', we map to 'active' or keep 'paid'? 
-    // Schema check: 'active', 'paid' are both allowed. Let's use 'active' for running investments.
-
     try {
         const { error } = await supabase
             .from('investments')
-            .update({ status: newStatus })
+            .update({ status: status })
             .eq('id', investmentId);
 
         if (error) throw error;

@@ -1,0 +1,120 @@
+{
+  "users": [
+    {
+      "name": "ajit",
+      "email": "abc@hmail.com",
+      "mobile": "8860768499",
+      "verified": true,
+      "joinedAt": "2025-12-27T11:18:10.437Z"
+    },
+    {
+      "name": "ajit singh",
+      "email": "singhajit1979.k@gmail.com",
+      "mobile": "7011975677",
+      "verified": true,
+      "joinedAt": "2025-12-27T11:33:59.019Z"
+    },
+    {
+      "name": "xyz",
+      "email": "abc.9810@gmail.com",
+      "mobile": "9817252545",
+      "verified": true,
+      "joinedAt": "2025-12-27T11:52:25.506Z"
+    },
+    {
+      "name": "Test User",
+      "email": "test@example.com",
+      "mobile": "1234567890",
+      "verified": false,
+      "joinedAt": "2025-12-28T10:23:47.859Z"
+    },
+    {
+      "name": "Test User",
+      "email": "test@example.com",
+      "mobile": "9876543210",
+      "verified": false,
+      "joinedAt": "2025-12-28T10:51:11.511Z"
+    },
+    {
+      "name": "abay",
+      "email": "abay@gmail.com",
+      "mobile": "9643620085",
+      "verified": true,
+      "joinedAt": "2026-01-01T15:23:43.099Z"
+    }
+  ],
+  "otps": {
+    "1234567890": "646991",
+    "9876543210": "594467",
+    "9643620085": "555208"
+  },
+  "bankDetails": {
+    "8860768499": {
+      "accountNumber": "123442566",
+      "ifsc": "ifscdhxxxxh",
+      "amount": 10000,
+      "updatedAt": "2025-12-27T11:20:30.834Z"
+    },
+    "7011975677": {
+      "accountNumber": "521410000947284",
+      "ifsc": "abcfu01118",
+      "amount": 10000,
+      "updatedAt": "2025-12-27T11:37:03.807Z"
+    },
+    "9817252545": {
+      "accountNumber": "363636363",
+      "ifsc": "sshh3636",
+      "amount": "10000",
+      "updatedAt": "2025-12-27T11:53:33.944Z"
+    },
+    "9845628590": {
+      "accountNumber": "Gdghbd",
+      "ifsc": "Grhhdbdb",
+      "amount": 10000,
+      "updatedAt": "2026-02-10T02:24:44.454Z"
+    },
+    "9643620085": {
+      "accountNumber": "Ysygdhdg",
+      "ifsc": "Ehhdhd",
+      "amount": 10000,
+      "updatedAt": "2026-02-10T02:36:30.841Z"
+    },
+    "+918742968666": {
+      "accountNumber": "12456796886",
+      "ifsc": "Hdfc7374898",
+      "amount": "12000",
+      "updatedAt": "2026-02-10T03:39:26.451Z"
+    }
+  },
+  "investments": {
+    "8860768499": {
+      "userId": "8860768499",
+      "baseAmount": 10000,
+      "days": 30,
+      "expectedReturn": 15000,
+      "status": "pending",
+      "createdAt": "2025-12-27T11:20:37.824Z"
+    },
+    "7011975677": {
+      "userId": "7011975677",
+      "baseAmount": 10000,
+      "days": 10,
+      "expectedReturn": 11000,
+      "status": "paid",
+      "createdAt": "2025-12-27T11:37:21.891Z",
+      "paymentMethod": "UPI",
+      "paidAt": "2025-12-27T11:37:36.799Z"
+    },
+    "9817252545": {
+      "userId": "9817252545",
+      "baseAmount": 10000,
+      "days": 30,
+      "expectedReturn": 15000,
+      "status": "verifying",
+      "createdAt": "2025-12-27T11:53:36.750Z",
+      "paymentMethod": "UPI",
+      "receiptUrl": null,
+      "submittedAt": "2025-12-28T09:17:54.468Z"
+    }
+  }
+}

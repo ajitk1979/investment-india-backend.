@@ -53,7 +53,8 @@ router.post('/register', async (req, res) => {
             return res.status(500).json({ error: 'Failed to send OTP. Please try again later.' });
         }
 
-        res.json({ message: 'OTP sent successfully', mobile, exists });
+        const hasMpin = !!user && !!user.mpin;
+        res.json({ message: 'OTP sent successfully', mobile, exists, hasMpin });
     } catch (err) {
         console.error('Register Error:', err.message);
         res.status(500).json({ error: 'Database error During Registration' });
@@ -94,7 +95,10 @@ router.post('/verify-otp', async (req, res) => {
                 .update({ verified: true })
                 .eq('mobile', mobile);
 
-            return res.json({ message: 'Verification successful' });
+            const { data: user } = await supabase.from('users').select('mpin').eq('mobile', mobile).single();
+            const hasMpin = !!user && !!user.mpin;
+
+            return res.json({ message: 'Verification successful', hasMpin });
         }
 
         console.log(`[Verify OTP] Mismatch: Sent=${otp}, Stored=${storedOtp.code}`);
@@ -142,10 +146,81 @@ router.post('/phone-email-verify', async (req, res) => {
             await supabase.from('users').update({ verified: true }).eq('mobile', mobile);
         }
 
-        res.json({ message: 'Verification successful', mobile, exists });
+        const hasMpin = !!user && !!user.mpin;
+        res.json({ message: 'Verification successful', mobile, exists, hasMpin });
     } catch (error) {
         console.error('Verification Error:', error.message);
         res.status(500).json({ error: 'Failed to fetch verification data' });
+    }
+});
+
+// Check User Status (MPIN vs OTP)
+router.post('/check-status', async (req, res) => {
+    const { mobile } = req.body;
+    if (!mobile) return res.status(400).json({ error: 'Mobile number required' });
+
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('verified, mpin')
+            .eq('mobile', mobile)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        if (!user) {
+            return res.json({ exists: false, verified: false, hasMpin: false });
+        }
+
+        res.json({
+            exists: true,
+            verified: user.verified,
+            hasMpin: !!user.mpin
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error check' });
+    }
+});
+
+// Setup MPIN
+router.post('/setup-mpin', async (req, res) => {
+    const { mobile, mpin } = req.body;
+    if (!mobile || !mpin) return res.status(400).json({ error: 'Mobile and MPIN required' });
+
+    try {
+        const { error } = await supabase
+            .from('users')
+            .update({ mpin })
+            .eq('mobile', mobile);
+
+        if (error) throw error;
+        res.json({ success: true, message: 'MPIN secured' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to set MPIN' });
+    }
+});
+
+// Login via MPIN
+router.post('/login-mpin', async (req, res) => {
+    const { mobile, mpin } = req.body;
+    if (!mobile || !mpin) return res.status(400).json({ error: 'Mobile and MPIN required' });
+
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('mobile', mobile)
+            .maybeSingle();
+
+        if (error || !user) return res.status(401).json({ error: 'User not found' });
+
+        if (user.mpin === mpin) {
+            res.json({ message: 'Login successful', mobile, user });
+        } else {
+            res.status(401).json({ error: 'Invalid PIN' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Authentication error' });
     }
 });
 
