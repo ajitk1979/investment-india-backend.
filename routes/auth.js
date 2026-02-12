@@ -78,25 +78,44 @@ router.post('/verify-otp', async (req, res) => {
             .eq('mobile', mobile)
             .maybeSingle();
 
-        console.log(`[Verify OTP] DB Fetch:`, storedOtp, error);
-
         if (error || !storedOtp) {
+            console.warn(`[Verify OTP] OTP not found or error for ${mobile}:`, error);
             return res.status(401).json({ error: 'Invalid or expired OTP' });
         }
 
         if (storedOtp.code === otp) {
-            console.log(`[Verify OTP] Success match`);
+            console.log(`[Verify OTP] Success match for ${mobile}`);
+
             // Delete used OTP
             await supabase.from('otps').delete().eq('mobile', mobile);
 
             // Mark user as verified
-            await supabase
+            const { error: updateError } = await supabase
                 .from('users')
                 .update({ verified: true })
                 .eq('mobile', mobile);
 
-            const { data: user } = await supabase.from('users').select('mpin').eq('mobile', mobile).single();
+            if (updateError) {
+                console.error(`[Verify OTP] Failed to update user verification status:`, updateError);
+                // Proceed anyway? Or fail? Better to fail or retry, but let's log and proceed if possible, 
+                // but returning 500 is safer to ensure data consistency.
+                throw updateError;
+            }
+
+            // Fetch user to check MPIN status
+            const { data: user, error: userError } = await supabase
+                .from('users')
+                .select('mpin, verified')
+                .eq('mobile', mobile)
+                .single();
+
+            if (userError) {
+                console.error(`[Verify OTP] Failed to fetch user details after verification:`, userError);
+                throw userError;
+            }
+
             const hasMpin = !!user && !!user.mpin;
+            console.log(`[Verify OTP] Complete. hasMpin=${hasMpin}`);
 
             return res.json({ message: 'Verification successful', hasMpin });
         }
@@ -105,7 +124,7 @@ router.post('/verify-otp', async (req, res) => {
         res.status(401).json({ error: 'Invalid OTP' });
     } catch (err) {
         console.error('Verify OTP Error:', err.message);
-        res.status(500).json({ error: 'Verification failed' });
+        res.status(500).json({ error: 'Verification failed due to server error' });
     }
 });
 

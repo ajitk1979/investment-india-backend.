@@ -40,43 +40,59 @@ router.get('/settings', async (req, res) => {
 // Update settings
 router.post('/settings', upload.single('qrCode'), async (req, res) => {
     const { upiId } = req.body;
+    console.log(`[Admin Settings] Update Request. UPI: ${upiId}, File: ${req.file ? 'Yes' : 'No'}`);
+
     let qrCodeUrl = null;
     if (req.file) {
         try {
+            console.log('[Admin Settings] Uploading QR Code...');
             qrCodeUrl = await uploadReceipt(req.file);
+            console.log(`[Admin Settings] QR Code Uploaded: ${qrCodeUrl}`);
         } catch (uploadError) {
-            console.error('QR Upload Error:', uploadError);
-            return res.status(500).json({ error: 'Failed to upload QR code' });
+            console.error('[Admin Settings] QR Upload Error:', uploadError);
+            return res.status(500).json({ error: 'Failed to upload QR code to storage' });
         }
     }
 
     try {
-        console.log('Attempting to update settings. UPI:', upiId, 'QR:', qrCodeUrl ? 'Yes' : 'No');
         const updateData = { upi_id: upiId, updated_at: new Date().toISOString() };
         if (qrCodeUrl) updateData.qr_code_url = qrCodeUrl;
 
-        const { data: existing, error: fetchError } = await supabase.from('admin_settings').select('id').limit(1).maybeSingle();
+        console.log('[Admin Settings] Fetching existing settings ID...');
+        const { data: existing, error: fetchError } = await supabase
+            .from('admin_settings')
+            .select('id')
+            .limit(1)
+            .maybeSingle();
 
         if (fetchError) {
-            console.error('Fetch existing settings error:', fetchError);
-            return res.status(500).json({ error: `Database fetch error: ${fetchError.message}` });
+            console.error('[Admin Settings] Fetch Error:', fetchError);
+            throw fetchError;
         }
 
         let result;
         if (existing) {
-            result = await supabase.from('admin_settings').update(updateData).eq('id', existing.id);
+            console.log(`[Admin Settings] Updating existing record ID: ${existing.id}`);
+            result = await supabase
+                .from('admin_settings')
+                .update(updateData)
+                .eq('id', existing.id);
         } else {
-            result = await supabase.from('admin_settings').insert([updateData]);
+            console.log('[Admin Settings] Inserting new settings record');
+            result = await supabase
+                .from('admin_settings')
+                .insert([updateData]);
         }
 
         if (result.error) {
-            console.error('Upsert settings error:', result.error);
-            return res.status(500).json({ error: `Database update error: ${result.error.message}` });
+            console.error('[Admin Settings] Database Update Error:', result.error);
+            throw result.error;
         }
 
-        res.json({ success: true });
+        console.log('[Admin Settings] Update Success');
+        res.json({ success: true, message: 'Settings updated successfully' });
     } catch (err) {
-        console.error('Admin Settings Route Error:', err);
+        console.error('[Admin Settings] Critical Error:', err);
         res.status(500).json({ error: err.message || 'Failed to update settings' });
     }
 });
