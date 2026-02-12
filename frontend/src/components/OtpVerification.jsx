@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import API_BASE_URL from '../config';
+import Header from './Header';
 
 const OtpVerification = () => {
     const location = useLocation();
@@ -44,11 +45,11 @@ const OtpVerification = () => {
 
     return (
         <div className="page-container fade-in">
+            <Header title="Verify Mobile" />
             <div className="glass" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
                 <div style={{ background: 'rgba(56, 189, 248, 0.1)', display: 'inline-flex', padding: '15px', borderRadius: '50%', marginBottom: '1.5rem' }}>
                     <span style={{ fontSize: '2rem' }}>🔒</span>
                 </div>
-                <h2 className="title" style={{ fontSize: '1.5rem' }}>Verify Mobile</h2>
                 <p style={{ marginBottom: '2rem', fontSize: '0.9rem' }}>
                     A 6-digit code has been sent to <br />
                     <strong style={{ color: 'var(--accent-primary)' }}>{mobile}</strong>

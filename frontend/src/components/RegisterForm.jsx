@@ -38,18 +38,7 @@ const RegisterForm = ({ initialMode = 'register' }) => {
         if (!authLoading && isAuthenticated) {
             navigate('/home');
         }
-
-        window.phoneEmailListener = handlePhoneEmail;
-
-        const scriptId = 'phone-email-script';
-        if (!document.getElementById(scriptId)) {
-            const script = document.createElement('script');
-            script.id = scriptId;
-            script.src = "https://www.phone.email/sign_in_button_v1.js";
-            script.async = true;
-            document.head.appendChild(script);
-        }
-    }, [isAuthenticated, authLoading, navigate, handlePhoneEmail]);
+    }, [isAuthenticated, authLoading, navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -97,7 +86,13 @@ const RegisterForm = ({ initialMode = 'register' }) => {
 
     return (
         <div className="page-container fade-in">
-            <div className="glass" style={{ textAlign: 'center' }}>
+            <div className="glass" style={{ textAlign: 'center', position: 'relative' }}>
+                <button
+                    onClick={() => navigate('/')}
+                    style={{ position: 'absolute', top: '20px', left: '20px', background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer', opacity: 0.7 }}
+                >
+                    ‹
+                </button>
                 <img src={logo} alt="Logo" style={{ width: '100px', borderRadius: '20px', marginBottom: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }} />
                 <h2 className="title">{isLogin ? 'Welcome Back' : 'Join the Community'}</h2>
 
@@ -153,11 +148,7 @@ const RegisterForm = ({ initialMode = 'register' }) => {
                     </div>
                 </form>
 
-                <div
-                    className="pe_signin_button"
-                    data-client-id="17337330768910834310"
-                    style={{ marginTop: '20px' }}
-                ></div>
+
             </div>
 
             <p style={{ textAlign: 'center', opacity: 0.5, fontSize: '0.8rem', marginTop: '1rem' }}>
